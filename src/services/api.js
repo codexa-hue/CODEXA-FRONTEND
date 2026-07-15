@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '/api/v1' : 'http://localhost:8000/api/v1');
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://codexa-backend-op1p.onrender.com/api/v1';
 
 const getHeaders = (isFormData = false) => {
   const headers = {};
