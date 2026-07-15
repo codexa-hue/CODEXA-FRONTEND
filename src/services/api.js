@@ -17,7 +17,11 @@ const handleResponse = async (response) => {
         const data = JSON.parse(text);
         errorData = data.detail || JSON.stringify(data);
       } catch {
-        errorData = text || response.statusText || errorData;
+        if (text && text.trim().startsWith('<')) {
+          errorData = 'Server connection error. Please ensure the backend server is deployed and running.';
+        } else {
+          errorData = text || response.statusText || errorData;
+        }
       }
     } catch {
       // Fallback if reading text fails
@@ -27,6 +31,7 @@ const handleResponse = async (response) => {
   if (response.status === 204) return null;
   return response.json();
 };
+
 
 
 export const api = {
