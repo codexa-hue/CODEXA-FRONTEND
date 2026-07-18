@@ -194,7 +194,14 @@ export const api = {
           method: 'DELETE', headers: getHeaders(),
         })
       ),
+    delete: async (id) =>
+      handleResponse(
+        await fetch(`${API_BASE_URL}/members/${id}`, {
+          method: 'DELETE', headers: getHeaders(),
+        })
+      ),
   },
+
 
   // ── Projects ─────────────────────────────────────────────────
   projects: {
@@ -260,7 +267,14 @@ export const api = {
           method: 'POST', headers: getHeaders(),
         })
       ),
+    delete: async (id) =>
+      handleResponse(
+        await fetch(`${API_BASE_URL}/join_requests/${id}`, {
+          method: 'DELETE', headers: getHeaders(),
+        })
+      ),
   },
+
 
   // ── Challenges ───────────────────────────────────────────────
   challenges: {

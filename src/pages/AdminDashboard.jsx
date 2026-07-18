@@ -262,7 +262,22 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleDeleteMember = async (member) => {
+    if (!window.confirm(`Are you sure you want to permanently delete "${member.name}"? This will delete their profile and user account.`)) {
+      return;
+    }
+    try {
+      await api.members.delete(member.id);
+      showToast(`Member "${member.name}" deleted successfully.`);
+      fetchMembers();
+    } catch (err) {
+      alert(err.message || 'Failed to delete member.');
+    }
+  };
+
+
   const fetchAnnouncements = async () => {
+
     setFetchingAnn(true);
     try {
       const data = await api.announcements.getAllAdmin();
@@ -355,6 +370,20 @@ export default function AdminDashboard() {
       alert(err.message || 'Failed to update status.');
     }
   };
+
+  const handleDeleteRequest = async (req) => {
+    if (!window.confirm(`Are you sure you want to permanently delete registration request from "${req.name}"? If they were approved, this will also delete their profile and user account.`)) {
+      return;
+    }
+    try {
+      await api.joinRequests.delete(req.id);
+      showToast(`Registration request from "${req.name}" deleted successfully.`);
+      fetchRequests();
+    } catch (err) {
+      alert(err.message || 'Failed to delete registration request.');
+    }
+  };
+
 
   const handleApproveAll = async () => {
     const pendingCount = requests.filter((r) => r.status === 'pending').length;
@@ -1153,20 +1182,41 @@ export default function AdminDashboard() {
                             <Check size={13} />
                             Approve
                           </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteRequest(req)}
+                            className="h-9 w-9 rounded-xl border border-brand-red/20 text-brand-red flex items-center justify-center hover:bg-brand-red/[0.06] transition-all"
+                            title="Delete registration request"
+                          >
+                            <Trash2 size={13} />
+                          </button>
                         </div>
                       ) : (
-                        <p
-                          className={`text-[10px] font-semibold ${
-                            isApproved
-                              ? 'text-brand-emerald'
-                              : 'text-brand-red'
-                          }`}
-                        >
-                          {isApproved
-                            ? 'Account created'
-                            : 'Application closed'}
-                        </p>
+                        <div className="flex items-center gap-3">
+                          <p
+                            className={`text-[10px] font-semibold ${
+                              isApproved
+                                ? 'text-brand-emerald'
+                                : 'text-brand-red'
+                            }`}
+                          >
+                            {isApproved
+                              ? 'Account created'
+                              : 'Application closed'}
+                          </p>
+
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteRequest(req)}
+                            className="h-9 w-9 rounded-xl border border-brand-red/20 text-brand-red flex items-center justify-center hover:bg-brand-red/[0.06] transition-all"
+                            title="Delete registration request"
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        </div>
                       )}
+
                     </div>
                   </div>
                 </div>
@@ -2911,6 +2961,7 @@ export default function AdminDashboard() {
                               )}
                             </div>
                           </div>
+
 
                           {/* Points history */}
                           <div className="flex-1 min-w-0">
