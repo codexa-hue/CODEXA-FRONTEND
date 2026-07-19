@@ -73,7 +73,9 @@ export default function AdminDashboard() {
   const [awardType, setAwardType]     = useState('workshop');
   const [awarding, setAwarding] = useState(false);
   const [memberSearch, setMemberSearch] = useState('');
+  const [memberYearFilter, setMemberYearFilter] = useState('all');
   // Bulk award
+
   const [bulkSelected, setBulkSelected] = useState(new Set());
   const [bulkPoints, setBulkPoints] = useState(10);
   const [bulkReason, setBulkReason] = useState('');
@@ -790,6 +792,22 @@ export default function AdminDashboard() {
 
     return matchesStatus && matchesYear && matchesSearch;
   });
+
+  const filteredMembers = members.filter((m) => {
+    const matchesSearch =
+      !memberSearch ||
+      m.name?.toLowerCase().includes(memberSearch.toLowerCase()) ||
+      m.email?.toLowerCase().includes(memberSearch.toLowerCase()) ||
+      m.unique_id?.toLowerCase().includes(memberSearch.toLowerCase()) ||
+      m.skills?.some(skill => skill.toLowerCase().includes(memberSearch.toLowerCase()));
+
+    const matchesYear =
+      memberYearFilter === 'all' ||
+      m.year?.toLowerCase().trim() === memberYearFilter.toLowerCase().trim();
+
+    return matchesSearch && matchesYear;
+  });
+
 
 
   const inputCls = 'input-field';
@@ -2592,6 +2610,27 @@ export default function AdminDashboard() {
           </div>
 
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+            {/* Year Filter */}
+            <div className="relative w-full sm:w-36 shrink-0">
+              <select
+                value={memberYearFilter}
+                onChange={(e) => setMemberYearFilter(e.target.value)}
+                className="input-field pr-8 w-full appearance-none cursor-pointer bg-bg-card font-bold text-xs"
+              >
+                <option value="all">All Years</option>
+                <option value="1st Year">1st Year</option>
+                <option value="2nd Year">2nd Year</option>
+                <option value="3rd Year">3rd Year</option>
+                <option value="4th Year">4th Year</option>
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-text-muted">
+                <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                  <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
+                </svg>
+              </div>
+            </div>
+
+            {/* Search */}
             <div className="relative">
               <Search
                 size={14}
@@ -2608,6 +2647,7 @@ export default function AdminDashboard() {
                 className="input-field pl-9 sm:w-64 bg-bg-card"
               />
             </div>
+
 
             <button
               onClick={exportMembersToCSV}
@@ -2639,28 +2679,13 @@ export default function AdminDashboard() {
             <input
               type="checkbox"
               checked={
-                members.filter((m) =>
-                  m.name
-                    .toLowerCase()
-                    .includes(memberSearch.toLowerCase())
-                ).length > 0 &&
-                bulkSelected.size ===
-                  members.filter((m) =>
-                    m.name
-                      .toLowerCase()
-                      .includes(memberSearch.toLowerCase())
-                  ).length
+                filteredMembers.length > 0 &&
+                bulkSelected.size === filteredMembers.length
               }
               onChange={(e) => {
-                const filtered = members.filter((m) =>
-                  m.name
-                    .toLowerCase()
-                    .includes(memberSearch.toLowerCase())
-                );
-
                 setBulkSelected(
                   e.target.checked
-                    ? new Set(filtered.map((m) => m.id))
+                    ? new Set(filteredMembers.map((m) => m.id))
                     : new Set()
                 );
               }}
@@ -2686,14 +2711,7 @@ export default function AdminDashboard() {
             )}
 
             <span className="px-2.5 py-1 rounded-lg bg-bg-card border border-bg-border text-[10px] font-semibold text-text-muted">
-              {
-                members.filter((m) =>
-                  m.name
-                    .toLowerCase()
-                    .includes(memberSearch.toLowerCase())
-                ).length
-              }{' '}
-              members
+              {filteredMembers.length} members
             </span>
           </div>
         </div>
@@ -2706,13 +2724,8 @@ export default function AdminDashboard() {
         </div>
       ) : (
         <div className="divide-y divide-bg-border">
-          {members
-            .filter((m) =>
-              m.name
-                .toLowerCase()
-                .includes(memberSearch.toLowerCase())
-            )
-            .map((m, i) => {
+          {filteredMembers.map((m, i) => {
+
               const isExpanded =
                 expandedStudentId === m.id;
 
