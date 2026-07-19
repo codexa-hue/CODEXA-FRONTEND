@@ -29,7 +29,9 @@ export default function AdminDashboard() {
   const [formSubmitting, setFormSubmitting] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [requestStatusFilter, setRequestStatusFilter] = useState('all');
+  const [requestYearFilter, setRequestYearFilter] = useState('all');
   const [bulkApproving, setBulkApproving] = useState(false);
+
 
   // Announcement form
   const [annTitle, setAnnTitle]   = useState('');
@@ -766,24 +768,29 @@ export default function AdminDashboard() {
   };
 
   const filteredRequests = requests.filter((req) => {
-  const matchesStatus =
-    requestStatusFilter === 'all' ||
-    req.status === requestStatusFilter;
+    const matchesStatus =
+      requestStatusFilter === 'all' ||
+      req.status === requestStatusFilter;
 
-  const query = searchQuery.toLowerCase().trim();
+    const matchesYear =
+      requestYearFilter === 'all' ||
+      req.year?.toLowerCase().trim() === requestYearFilter.toLowerCase().trim();
 
-  const matchesSearch =
-    !query ||
-    req.name?.toLowerCase().includes(query) ||
-    req.email?.toLowerCase().includes(query) ||
-    req.year?.toLowerCase().includes(query) ||
-    req.status?.toLowerCase().includes(query) ||
-    req.skills?.some((skill) =>
-      skill.toLowerCase().includes(query)
-    );
+    const query = searchQuery.toLowerCase().trim();
 
-  return matchesStatus && matchesSearch;
-});
+    const matchesSearch =
+      !query ||
+      req.name?.toLowerCase().includes(query) ||
+      req.email?.toLowerCase().includes(query) ||
+      req.year?.toLowerCase().includes(query) ||
+      req.status?.toLowerCase().includes(query) ||
+      req.skills?.some((skill) =>
+        skill.toLowerCase().includes(query)
+      );
+
+    return matchesStatus && matchesYear && matchesSearch;
+  });
+
 
   const inputCls = 'input-field';
 
@@ -891,32 +898,56 @@ export default function AdminDashboard() {
             </p>
           </div>
 
-          {/* Search */}
-          <div className="relative w-full xl:w-80">
-            <Search
-              size={14}
-              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted"
-            />
-
-            <input
-              type="text"
-              placeholder="Search applications..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="input-field pl-10 pr-10 w-full"
-            />
-
-            {searchQuery && (
-              <button
-                type="button"
-                onClick={() => setSearchQuery('')}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary"
+          {/* Search & Year Filter */}
+          <div className="flex flex-col sm:flex-row items-center gap-3 w-full xl:w-auto">
+            {/* Year Filter */}
+            <div className="relative w-full sm:w-40 shrink-0">
+              <select
+                value={requestYearFilter}
+                onChange={(e) => setRequestYearFilter(e.target.value)}
+                className="input-field pr-8 w-full appearance-none cursor-pointer bg-bg-card font-bold text-xs"
               >
-                ×
-              </button>
-            )}
+                <option value="all">All Years</option>
+                <option value="1st Year">1st Year</option>
+                <option value="2nd Year">2nd Year</option>
+                <option value="3rd Year">3rd Year</option>
+                <option value="4th Year">4th Year</option>
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-text-muted">
+                <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                  <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
+                </svg>
+              </div>
+            </div>
+
+            {/* Search */}
+            <div className="relative w-full xl:w-80">
+              <Search
+                size={14}
+                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted"
+              />
+
+              <input
+                type="text"
+                placeholder="Search applications..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="input-field pl-10 pr-10 w-full"
+              />
+
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary"
+                >
+                  ×
+                </button>
+              )}
+            </div>
           </div>
         </div>
+
 
         {/* Status filters */}
         <div className="flex flex-wrap items-center gap-2 mt-5">
