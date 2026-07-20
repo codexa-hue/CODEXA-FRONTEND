@@ -1254,29 +1254,45 @@ export default function MemberHome() {
                     >
                       <div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                          <span
-                            style={{
-                              fontSize: '10px',
-                              fontWeight: '800',
-                              textTransform: 'uppercase',
-                              padding: '2px 8px',
-                              borderRadius: '6px',
-                              background:
-                                chal.difficulty === 'Easy' ? 'rgba(16,185,129,0.1)' :
-                                chal.difficulty === 'Medium' ? 'rgba(245,158,11,0.1)' :
-                                'rgba(239,68,68,0.1)',
-                              color:
-                                chal.difficulty === 'Easy' ? 'var(--brand-emerald)' :
-                                chal.difficulty === 'Medium' ? 'var(--brand-amber)' :
-                                'var(--brand-red)',
-                            }}
-                          >
-                            {chal.difficulty}
-                          </span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <span
+                              style={{
+                                fontSize: '10px',
+                                fontWeight: '800',
+                                textTransform: 'uppercase',
+                                padding: '2px 8px',
+                                borderRadius: '6px',
+                                background:
+                                  chal.difficulty === 'Easy' ? 'rgba(16,185,129,0.1)' :
+                                  chal.difficulty === 'Medium' ? 'rgba(245,158,11,0.1)' :
+                                  'rgba(239,68,68,0.1)',
+                                color:
+                                  chal.difficulty === 'Easy' ? 'var(--brand-emerald)' :
+                                  chal.difficulty === 'Medium' ? 'var(--brand-amber)' :
+                                  'var(--brand-red)',
+                              }}
+                            >
+                              {chal.difficulty}
+                            </span>
+                            <span
+                              style={{
+                                fontSize: '10px',
+                                fontWeight: '600',
+                                padding: '2px 8px',
+                                borderRadius: '6px',
+                                background: 'var(--bg-elevated)',
+                                border: '1px solid var(--bg-border)',
+                                color: 'var(--text-secondary)',
+                              }}
+                            >
+                              {chal.target_year === 'all' ? 'All Years' : chal.target_year}
+                            </span>
+                          </div>
                           <span style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--brand-violet)' }}>
                             +{chal.points} points
                           </span>
                         </div>
+
 
                         <h3 style={{ fontSize: '15px', fontWeight: 'bold', margin: '4px 0', color: 'var(--text-primary)' }}>
                           {chal.title}

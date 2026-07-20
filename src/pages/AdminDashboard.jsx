@@ -105,6 +105,8 @@ export default function AdminDashboard() {
   const [chalDiff, setChalDiff] = useState('Easy');
   const [chalLink, setChalLink] = useState('');
   const [chalPoints, setChalPoints] = useState(10);
+  const [chalTargetYear, setChalTargetYear] = useState('all');
+
   const [challengesSubTab, setChallengesSubTab] = useState('prompts'); // prompts | submissions
   const [pwSaving, setPwSaving] = useState(false);
   const [pwMsg, setPwMsg] = useState(null);
@@ -652,7 +654,8 @@ export default function AdminDashboard() {
         description: chalDesc,
         difficulty: chalDiff,
         link: chalLink || null,
-        points: parseInt(chalPoints, 10) || 10
+        points: parseInt(chalPoints, 10) || 10,
+        target_year: chalTargetYear
       });
       showToast('Challenge published successfully!');
       setChalTitle('');
@@ -660,6 +663,7 @@ export default function AdminDashboard() {
       setChalDiff('Easy');
       setChalLink('');
       setChalPoints(10);
+      setChalTargetYear('all');
       await fetchChallenges();
     } catch (err) {
       alert(err.message || 'Failed to create challenge.');
@@ -667,6 +671,7 @@ export default function AdminDashboard() {
       setFormSubmitting(false);
     }
   };
+
 
   const handleDeleteChallenge = async (id) => {
     setConfirmConfig({
@@ -3582,7 +3587,7 @@ export default function AdminDashboard() {
                     />
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-3 gap-3">
                     <div className="space-y-1">
                       <label className="text-[10px] font-bold text-text-secondary">Difficulty</label>
                       <select
@@ -3608,7 +3613,23 @@ export default function AdminDashboard() {
                         className="input-field w-full text-xs"
                       />
                     </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-text-secondary">Target Year</label>
+                      <select
+                        value={chalTargetYear}
+                        onChange={(e) => setChalTargetYear(e.target.value)}
+                        className="input-field w-full text-xs"
+                      >
+                        <option value="all">All Years</option>
+                        <option value="1st Year">1st Year</option>
+                        <option value="2nd Year">2nd Year</option>
+                        <option value="3rd Year">3rd Year</option>
+                        <option value="4th Year">4th Year</option>
+                      </select>
+                    </div>
                   </div>
+
 
                   <div className="space-y-1">
                     <label className="text-[10px] font-bold text-text-secondary">LeetCode / Resource Link</label>
@@ -3646,17 +3667,23 @@ export default function AdminDashboard() {
                       <div key={chal.id} className="card p-5 flex flex-col justify-between border border-bg-border">
                         <div>
                           <div className="flex items-center justify-between mb-2">
-                            <span className={`px-2 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider ${
-                              chal.difficulty === 'Easy' ? 'bg-brand-emerald/10 text-brand-emerald' :
-                              chal.difficulty === 'Medium' ? 'bg-brand-amber/10 text-brand-amber' :
-                              'bg-brand-red/10 text-brand-red'
-                            }`}>
-                              {chal.difficulty}
-                            </span>
+                            <div className="flex items-center gap-1.5">
+                              <span className={`px-2 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider ${
+                                chal.difficulty === 'Easy' ? 'bg-brand-emerald/10 text-brand-emerald' :
+                                chal.difficulty === 'Medium' ? 'bg-brand-amber/10 text-brand-amber' :
+                                'bg-brand-red/10 text-brand-red'
+                              }`}>
+                                {chal.difficulty}
+                              </span>
+                              <span className="px-2 py-0.5 rounded bg-bg-elevated border border-bg-border text-[8px] font-semibold text-text-secondary">
+                                {chal.target_year === 'all' ? 'All Years' : chal.target_year}
+                              </span>
+                            </div>
                             <span className="text-[10px] font-bold text-brand-violet">
                               +{chal.points} pts
                             </span>
                           </div>
+
                           <h4 className="font-bold text-sm text-text-primary mb-1">{chal.title}</h4>
                           <p className="text-xs text-text-secondary line-clamp-3 mb-4">{chal.description}</p>
                         </div>
