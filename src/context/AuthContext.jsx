@@ -200,12 +200,7 @@ export const AuthProvider = ({ children }) => {
       }
 
       try {
-        const members = await api.members.getAll();
-
-        const myProfile = members.find(
-          (member) =>
-            String(member.user_id) === String(decoded.sub)
-        );
+        const myProfile = await api.members.getMeProfile();
 
         if (myProfile) {
           setProfile(myProfile);
@@ -215,6 +210,7 @@ export const AuthProvider = ({ children }) => {
             JSON.stringify(myProfile)
           );
         }
+
 
         // Refresh the real email + unique_id from /me
         try {

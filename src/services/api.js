@@ -172,8 +172,11 @@ export const api = {
 
   // ── Members ──────────────────────────────────────────────────
   members: {
+    getMeProfile: async () =>
+      handleResponse(await fetch(`${API_BASE_URL}/members/me`, { headers: getHeaders() })),
     getAll: async () =>
       handleResponse(await fetch(`${API_BASE_URL}/members/`, { headers: getHeaders() })),
+
     getById: async (id) =>
       handleResponse(await fetch(`${API_BASE_URL}/members/${id}`, { headers: getHeaders() })),
     update: async (id, data) =>
