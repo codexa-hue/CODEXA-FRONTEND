@@ -808,7 +808,43 @@ export default function AdminDashboard() {
     showToast('CSV downloaded successfully!');
   };
 
+  const requestsFilteredByYear = requests.filter((req) => {
+    const matchesYear =
+      requestYearFilter === 'all' ||
+      req.year?.toLowerCase().trim() === requestYearFilter.toLowerCase().trim();
+
+    const query = searchQuery.toLowerCase().trim();
+    const matchesSearch =
+      !query ||
+      req.name?.toLowerCase().includes(query) ||
+      req.email?.toLowerCase().includes(query) ||
+      req.year?.toLowerCase().includes(query) ||
+      req.status?.toLowerCase().includes(query) ||
+      req.skills?.some((skill) =>
+        skill.toLowerCase().includes(query)
+      );
+
+    return matchesYear && matchesSearch;
+  });
+
+  const membersFilteredByYear = members.filter((m) => {
+    const matchesYear =
+      memberYearFilter === 'all' ||
+      m.year?.toLowerCase().trim() === memberYearFilter.toLowerCase().trim();
+
+    const query = (memberSearch || '').toLowerCase().trim();
+    const matchesSearch =
+      !query ||
+      m.name?.toLowerCase().includes(query) ||
+      m.email?.toLowerCase().includes(query) ||
+      m.unique_id?.toLowerCase().includes(query) ||
+      m.skills?.some(skill => skill.toLowerCase().includes(query));
+
+    return matchesYear && matchesSearch;
+  });
+
   const filteredRequests = requests.filter((req) => {
+
     const matchesStatus =
       requestStatusFilter === 'all' ||
       req.status === requestStatusFilter;
@@ -899,15 +935,16 @@ export default function AdminDashboard() {
       {activeTab === 'requests' && (
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-7">
         {[
-          { label: 'Total Members',   value: members.length || 0,
+          { label: 'Total Members',   value: members.filter(m => requestYearFilter === 'all' || m.year?.toLowerCase().trim() === requestYearFilter.toLowerCase().trim()).length || 0,
             icon: <Users size={18} style={{ color: '#5b6cf9' }} />, iconBg: 'rgba(91,108,249,0.12)' },
-          { label: 'Pending',         value: requests.filter(r => r.status === 'pending').length,
+          { label: 'Pending',         value: requests.filter(r => r.status === 'pending' && (requestYearFilter === 'all' || r.year?.toLowerCase().trim() === requestYearFilter.toLowerCase().trim())).length,
             icon: <FileText size={18} style={{ color: '#f59e0b' }} />, iconBg: 'rgba(245,158,11,0.12)' },
           { label: 'Upcoming Events', value: events.filter(ev => new Date(ev.date) >= new Date()).length,
             icon: <Calendar size={18} style={{ color: '#f472b6' }} />, iconBg: 'rgba(244,114,182,0.12)' },
           { label: 'Announcements',   value: announcements.length || 0,
             icon: <Megaphone size={18} style={{ color: '#3b82f6' }} />, iconBg: 'rgba(59,130,246,0.12)' },
-        ].map(({ label, value, icon, iconBg }) => (
+        ]
+.map(({ label, value, icon, iconBg }) => (
           <div key={label} className="card p-5">
             <div className="flex items-start justify-between gap-2">
               <div>
@@ -1023,26 +1060,26 @@ export default function AdminDashboard() {
             {
               key: 'all',
               label: 'All',
-              count: requests.length,
+              count: requestsFilteredByYear.length,
             },
             {
               key: 'pending',
               label: 'Pending',
-              count: requests.filter(
+              count: requestsFilteredByYear.filter(
                 (r) => r.status === 'pending'
               ).length,
             },
             {
               key: 'approved',
               label: 'Approved',
-              count: requests.filter(
+              count: requestsFilteredByYear.filter(
                 (r) => r.status === 'approved'
               ).length,
             },
             {
               key: 'rejected',
               label: 'Rejected',
-              count: requests.filter(
+              count: requestsFilteredByYear.filter(
                 (r) => r.status === 'rejected'
               ).length,
             },
@@ -1074,7 +1111,7 @@ export default function AdminDashboard() {
           ))}
 
           {/* Bulk approve button — only visible when there are pending requests */}
-          {requests.filter((r) => r.status === 'pending').length > 0 && (
+          {requestsFilteredByYear.filter((r) => r.status === 'pending').length > 0 && (
             <button
               type="button"
               id="btn-approve-all-pending"
@@ -1090,7 +1127,7 @@ export default function AdminDashboard() {
               ) : (
                 <>
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                  Approve All Pending ({requests.filter((r) => r.status === 'pending').length})
+                  Approve All Pending ({requestsFilteredByYear.filter((r) => r.status === 'pending').length})
                 </>
               )}
             </button>
@@ -2553,7 +2590,7 @@ export default function AdminDashboard() {
 
             <div className="flex items-end gap-2 mt-2">
               <p className="text-3xl font-black text-text-primary leading-none">
-                {members.length}
+                {membersFilteredByYear.length}
               </p>
 
               <span className="text-[10px] font-semibold text-brand-blue mb-0.5">
@@ -2577,7 +2614,7 @@ export default function AdminDashboard() {
 
             <div className="flex items-end gap-2 mt-2">
               <p className="text-3xl font-black text-text-primary leading-none">
-                {members.reduce(
+                {membersFilteredByYear.reduce(
                   (total, member) =>
                     total + (member.points || 0),
                   0
@@ -2605,12 +2642,13 @@ export default function AdminDashboard() {
 
             <div className="flex items-end gap-2 mt-2">
               <p className="text-3xl font-black text-text-primary leading-none">
-                {members.reduce(
+                {membersFilteredByYear.reduce(
                   (total, member) =>
                     total + (member.badges?.length || 0),
                   0
                 )}
               </p>
+
 
               <span className="text-[10px] font-semibold text-brand-emerald mb-0.5">
                 Achievements
