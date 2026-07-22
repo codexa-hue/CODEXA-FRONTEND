@@ -541,6 +541,23 @@ function ProfileSection({
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
 
+  React.useEffect(() => {
+    if (profile) {
+      setName(profile.name || '');
+      setAvatarUrl(profile.avatar_url || '');
+      setYear(profile.year || '1st Year');
+      setSkills(profile.skills || []);
+      setSocials({
+        github: profile.socials?.github || '',
+        linkedin: profile.socials?.linkedin || '',
+        twitter: profile.socials?.twitter || '',
+        portfolio: profile.socials?.portfolio || '',
+        leetcode: profile.socials?.leetcode || '',
+      });
+    }
+  }, [profile]);
+
+
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;

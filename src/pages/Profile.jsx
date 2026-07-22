@@ -27,6 +27,21 @@ export default function Profile() {
   const [toast, setToast] = useState('');
   const [loading, setLoading] = useState(false);
 
+  React.useEffect(() => {
+    if (profile) {
+      setName(profile.name || '');
+      setYear(profile.year || '1st Year');
+      setSkillsStr(profile.skills?.join(', ') || '');
+      setSocials({
+        github: profile.socials?.github || '',
+        linkedin: profile.socials?.linkedin || '',
+        twitter: profile.socials?.twitter || '',
+        portfolio: profile.socials?.portfolio || '',
+      });
+    }
+  }, [profile]);
+
+
   const handleSave = async (e) => {
     e.preventDefault();
     setLoading(true);
