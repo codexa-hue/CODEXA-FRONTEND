@@ -120,33 +120,30 @@ export default function AdminDashboard() {
   const [fetchingResources, setFetchingResources] = useState(false);
   const [confirmConfig, setConfirmConfig] = useState(null);
 
-  useEffect(() => {
-    // Always load overview stats
-    api.members.getAll().then(data => setMembers(data.sort((a,b) => b.points - a.points))).catch(() => {});
-    api.events.getAllAdmin().then(data => setEvents(data.sort((a,b) => new Date(b.date) - new Date(a.date)))).catch(() => {});
-    api.announcements.getAllAdmin().then(data => setAnnouncements(data.sort((a,b) => new Date(b.created_at) - new Date(a.created_at)))).catch(() => {});
-    api.joinRequests.getAll().then(data => {
-      setRequests(data.sort((a,b) => {
-        if (a.status === 'pending' && b.status !== 'pending') return -1;
-        if (a.status !== 'pending' && b.status === 'pending') return 1;
-        return new Date(b.created_at) - new Date(a.created_at);
-      }));
-      setLoading(false);
-    }).catch(() => setLoading(false));
-  }, []);
+  // Cache tracking states
+  const [hasLoadedRequests, setHasLoadedRequests] = useState(false);
+  const [hasLoadedEvents, setHasLoadedEvents] = useState(false);
+  const [hasLoadedAnnouncements, setHasLoadedAnnouncements] = useState(false);
+  const [hasLoadedMembers, setHasLoadedMembers] = useState(false);
+  const [hasLoadedResources, setHasLoadedResources] = useState(false);
+  const [hasLoadedChallenges, setHasLoadedChallenges] = useState(false);
+
+
+
 
   useEffect(() => {
-    if (activeTab === 'requests') fetchRequests();
-    if (activeTab === 'events') fetchEvents();
-    if (activeTab === 'announcements') fetchAnnouncements();
-    if (activeTab === 'members') fetchMembers();
-    if (activeTab === 'resources') fetchResources();
+    if (activeTab === 'requests' && !hasLoadedRequests) fetchRequests();
+    if (activeTab === 'events' && !hasLoadedEvents) fetchEvents();
+    if (activeTab === 'announcements' && !hasLoadedAnnouncements) fetchAnnouncements();
+    if (activeTab === 'members' && !hasLoadedMembers) fetchMembers();
+    if (activeTab === 'resources' && !hasLoadedResources) fetchResources();
     if (activeTab === 'profile') fetchAdminProfile();
-    if (activeTab === 'challenges') {
+    if (activeTab === 'challenges' && !hasLoadedChallenges) {
       fetchChallenges();
       fetchAllSubmissions();
     }
-  }, [activeTab]);
+  }, [activeTab, hasLoadedRequests, hasLoadedEvents, hasLoadedAnnouncements, hasLoadedMembers, hasLoadedResources, hasLoadedChallenges]);
+
 
   const fetchAdminProfile = async () => {
     // Pre-fill instantly from AuthContext cache
@@ -204,9 +201,11 @@ export default function AdminDashboard() {
     try {
       const data = await api.members.getAll();
       setMembers(data.sort((a, b) => b.points - a.points));
+      setHasLoadedMembers(true);
     } catch (err) { console.error(err); }
     finally { setFetchingMembers(false); }
   };
+
 
   const handleAwardPoints = async (e) => {
     e.preventDefault();
@@ -283,11 +282,11 @@ export default function AdminDashboard() {
 
 
   const fetchAnnouncements = async () => {
-
     setFetchingAnn(true);
     try {
       const data = await api.announcements.getAllAdmin();
       setAnnouncements(data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)));
+      setHasLoadedAnnouncements(true);
     } catch (err) {
       console.error(err);
     } finally {
@@ -306,6 +305,7 @@ export default function AdminDashboard() {
           return new Date(b.created_at) - new Date(a.created_at);
         })
       );
+      setHasLoadedRequests(true);
     } catch (err) {
       console.error(err);
     } finally {
@@ -318,12 +318,39 @@ export default function AdminDashboard() {
     try {
       const data = await api.events.getAllAdmin();
       setEvents(data.sort((a, b) => new Date(b.date) - new Date(a.date)));
+      setHasLoadedEvents(true);
     } catch (err) {
       console.error(err);
     } finally {
       setFetchingEvents(false);
     }
   };
+
+  const handleForceRefresh = async () => {
+    setLoading(true);
+    setFetchingMembers(true);
+    setFetchingEvents(true);
+    setFetchingAnn(true);
+    setFetchingResources(true);
+    setFetchingChallenges(true);
+    try {
+      await Promise.all([
+        fetchRequests(),
+        fetchMembers(),
+        fetchEvents(),
+        fetchAnnouncements(),
+        fetchResources(),
+        fetchChallenges(),
+        fetchAllSubmissions()
+      ]);
+      showToast('Dashboard data refreshed!');
+    } catch (err) {
+      console.error(err);
+      showToast('Failed to refresh data.');
+    }
+  };
+
+
 
   const handleFileUpload = async (file, fileType, form) => {
     const isAnn = form === 'ann';
@@ -371,6 +398,7 @@ export default function AdminDashboard() {
       if (status === 'approved') {
         setOnboardedInfo({ email });
       }
+      setHasLoadedMembers(false);
       fetchRequests();
     } catch (err) {
       alert(err.message || 'Failed to update status.');
@@ -384,6 +412,7 @@ export default function AdminDashboard() {
     try {
       await api.joinRequests.delete(req.id);
       showToast(`Registration request from "${req.name}" deleted successfully.`);
+      setHasLoadedMembers(false);
       fetchRequests();
     } catch (err) {
       alert(err.message || 'Failed to delete registration request.');
@@ -400,6 +429,7 @@ export default function AdminDashboard() {
       const res = await api.joinRequests.approveAll();
       showToast(res.message || `${res.approved_count} application(s) approved!`);
       setOnboardedInfo(null);
+      setHasLoadedMembers(false);
       fetchRequests();
     } catch (err) {
       alert(err.message || 'Bulk approval failed.');
@@ -407,6 +437,7 @@ export default function AdminDashboard() {
       setBulkApproving(false);
     }
   };
+
 
   const handleCreateAnnouncement = async (e) => {
     e.preventDefault();
@@ -627,6 +658,7 @@ export default function AdminDashboard() {
     try {
       const data = await api.challenges.getAll();
       setChallenges(Array.isArray(data) ? data : []);
+      setHasLoadedChallenges(true);
     } catch (err) {
       console.error('Failed to fetch challenges:', err);
       setChallenges([]);
@@ -644,6 +676,7 @@ export default function AdminDashboard() {
       setSubmissions([]);
     }
   };
+
 
   const handleCreateChallenge = async (e) => {
     e.preventDefault();
@@ -707,18 +740,19 @@ export default function AdminDashboard() {
   };
 
   const fetchResources = async () => {
-  setFetchingResources(true);
+    setFetchingResources(true);
+    try {
+      const data = await api.resources.getAll();
+      setResources(Array.isArray(data) ? data : []);
+      setHasLoadedResources(true);
+    } catch (err) {
+      console.error('Failed to fetch resources:', err);
+      setResources([]);
+    } finally {
+      setFetchingResources(false);
+    }
+  };
 
-  try {
-    const data = await api.resources.getAll();
-    setResources(Array.isArray(data) ? data : []);
-  } catch (err) {
-    console.error('Failed to fetch resources:', err);
-    setResources([]);
-  } finally {
-    setFetchingResources(false);
-  }
-};
   const handleCreateResource = async (e) => {
     e.preventDefault();
     setFormSubmitting(true);
@@ -828,7 +862,7 @@ export default function AdminDashboard() {
       )}
 
       {/* Back + Header */}
-      <div className="page-header">
+      <div className="page-header flex items-center justify-between">
         <div className="flex items-center gap-3">
           <button onClick={() => navigate(-1)}
             className="p-2 rounded-lg border border-bg-border text-text-muted hover:text-text-primary hover:border-brand-violet/30 transition-all">
@@ -848,7 +882,18 @@ export default function AdminDashboard() {
             <p className="page-subtitle">CODEXA Admin Portal</p>
           </div>
         </div>
+
+        {activeTab !== 'profile' && (
+          <button
+            onClick={handleForceRefresh}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-bg-border text-xs font-semibold text-text-secondary hover:text-brand-blue hover:border-brand-blue/30 bg-bg-card transition-all cursor-pointer shadow-sm hover:shadow-md"
+          >
+            <Clock size={12} className={loading || fetchingMembers || fetchingEvents || fetchingAnn || fetchingResources || fetchingChallenges ? "animate-spin text-brand-blue" : ""} />
+            <span>{loading || fetchingMembers || fetchingEvents || fetchingAnn || fetchingResources || fetchingChallenges ? 'Refreshing...' : 'Refresh Data'}</span>
+          </button>
+        )}
       </div>
+
 
       {/* ── Analytics Overview — only on Registrations tab ── */}
       {activeTab === 'requests' && (
