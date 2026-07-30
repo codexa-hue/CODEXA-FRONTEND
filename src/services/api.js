@@ -295,10 +295,12 @@ export const api = {
           method: 'DELETE', headers: getHeaders(),
         })
       ),
-    submit: async (id, githubUrl, comments = "") =>
+    submit: async (id, payload) =>
       handleResponse(
-        await fetch(`${API_BASE_URL}/challenges/${id}/submit?github_url=${encodeURIComponent(githubUrl)}&comments=${encodeURIComponent(comments)}`, {
-          method: 'POST', headers: getHeaders(),
+        await fetch(`${API_BASE_URL}/challenges/${id}/submit`, {
+          method: 'POST',
+          headers: { ...getHeaders(), 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
         })
       ),
     getSubmissions: async (id) =>

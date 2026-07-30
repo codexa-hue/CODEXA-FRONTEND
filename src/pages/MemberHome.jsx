@@ -3,6 +3,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../services/api";
 import { getFullUploadUrl } from "../utils/url";
+import CodeEditor from "../components/CodeEditor";
+
 
 import {
   AlertCircle,
@@ -524,6 +526,8 @@ export default function MemberHome() {
   const [submissionComments, setSubmissionComments] = useState('');
   const [submittingChallenge, setSubmittingChallenge] = useState(false);
   const [showChallengeModal, setShowChallengeModal] = useState(false);
+  const [submissionType, setSubmissionType] = useState('editor'); // 'editor' or 'github'
+  const [submittedCode, setSubmittedCode] = useState('');
 
   const loadFeed = async () => {
     setLoading(true);
@@ -591,10 +595,22 @@ export default function MemberHome() {
     e.preventDefault();
     if (!selectedChallenge) return;
     setSubmittingChallenge(true);
+
+    const payload = {
+      comments: submissionComments,
+    };
+
+    if (submissionType === "editor") {
+      payload.submitted_code = submittedCode;
+    } else {
+      payload.github_url = githubUrl;
+    }
+
     try {
-      await api.challenges.submit(selectedChallenge.id, githubUrl, submissionComments);
+      await api.challenges.submit(selectedChallenge.id, payload);
       showToast('Solution submitted! Pending review.', 'success');
       setGithubUrl('');
+      setSubmittedCode('');
       setSubmissionComments('');
       setShowChallengeModal(false);
       setSelectedChallenge(null);
@@ -1434,8 +1450,9 @@ export default function MemberHome() {
               borderRadius: '20px',
               padding: '28px',
               width: '90%',
-              maxWidth: '480px',
+              maxWidth: submissionType === 'editor' ? '680px' : '480px',
               boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.3)',
+              transition: 'max-width 0.2s ease-in-out',
             }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -1467,36 +1484,83 @@ export default function MemberHome() {
               </button>
             </div>
 
+            {/* Submission Mode Selection Tabs */}
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', borderBottom: '1px solid var(--bg-border)', paddingBottom: '12px' }}>
+              <button
+                type="button"
+                onClick={() => setSubmissionType('editor')}
+                style={{
+                  padding: '6px 14px',
+                  fontSize: '12px',
+                  fontWeight: 'bold',
+                  borderRadius: '8px',
+                  border: '1px solid ' + (submissionType === 'editor' ? 'var(--brand-violet)' : 'var(--bg-border)'),
+                  background: submissionType === 'editor' ? 'var(--brand-violet)' : 'var(--bg-card)',
+                  color: submissionType === 'editor' ? '#fff' : 'var(--text-secondary)',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                }}
+              >
+                Interactive Python Editor
+              </button>
+              <button
+                type="button"
+                onClick={() => setSubmissionType('github')}
+                style={{
+                  padding: '6px 14px',
+                  fontSize: '12px',
+                  fontWeight: 'bold',
+                  borderRadius: '8px',
+                  border: '1px solid ' + (submissionType === 'github' ? 'var(--brand-violet)' : 'var(--bg-border)'),
+                  background: submissionType === 'github' ? 'var(--brand-violet)' : 'var(--bg-card)',
+                  color: submissionType === 'github' ? '#fff' : 'var(--text-secondary)',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                }}
+              >
+                Submit GitHub Repo URL
+              </button>
+            </div>
+
             <form onSubmit={handleSubmitChallengeSolution} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <label style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>
-                  GitHub Repository Link
-                  <span style={{ color: 'var(--brand-red)', marginLeft: '2px' }}>*</span>
-                </label>
-                <input
-                  type="url"
-                  required
-                  value={githubUrl}
-                  onChange={(e) => setGithubUrl(e.target.value)}
-                  placeholder="https://github.com/your-username/repo-name"
-                  style={{
-                    padding: '10px 14px',
-                    borderRadius: '10px',
-                    border: '1px solid var(--bg-border)',
-                    background: 'var(--bg-card)',
-                    color: 'var(--text-primary)',
-                    fontSize: '12px',
-                    outline: 'none',
-                  }}
-                />
-              </div>
+              {submissionType === 'editor' ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <label style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>
+                    Write Python Code Below
+                  </label>
+                  <CodeEditor code={submittedCode} setCode={setSubmittedCode} />
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>
+                    GitHub Repository Link
+                    <span style={{ color: 'var(--brand-red)', marginLeft: '2px' }}>*</span>
+                  </label>
+                  <input
+                    type="url"
+                    required
+                    value={githubUrl}
+                    onChange={(e) => setGithubUrl(e.target.value)}
+                    placeholder="https://github.com/your-username/repo-name"
+                    style={{
+                      padding: '10px 14px',
+                      borderRadius: '10px',
+                      border: '1px solid var(--bg-border)',
+                      background: 'var(--bg-card)',
+                      color: 'var(--text-primary)',
+                      fontSize: '12px',
+                      outline: 'none',
+                    }}
+                  />
+                </div>
+              )}
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                 <label style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>
                   Notes / Comments (Optional)
                 </label>
                 <textarea
-                  rows={3}
+                  rows={2}
                   value={submissionComments}
                   onChange={(e) => setSubmissionComments(e.target.value)}
                   placeholder="Describe your solution approach or notes for the reviewer..."

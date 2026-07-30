@@ -106,6 +106,7 @@ export default function AdminDashboard() {
   const [chalLink, setChalLink] = useState('');
   const [chalPoints, setChalPoints] = useState(10);
   const [chalTargetYear, setChalTargetYear] = useState('all');
+  const [selectedCodeSubmission, setSelectedCodeSubmission] = useState(null);
 
   const [challengesSubTab, setChallengesSubTab] = useState('prompts'); // prompts | submissions
   const [pwSaving, setPwSaving] = useState(false);
@@ -3830,14 +3831,26 @@ export default function AdminDashboard() {
                           <td className="px-5 py-4 font-semibold text-text-primary">{sub.student_name}</td>
                           <td className="px-5 py-4 text-text-secondary">{sub.challenge_title}</td>
                           <td className="px-5 py-4">
-                            <a
-                               href={sub.github_url}
-                               target="_blank"
-                               rel="noreferrer"
-                               className="text-brand-blue font-medium hover:underline inline-flex items-center gap-1"
-                            >
-                              View Code <ExternalLink size={10} />
-                            </a>
+                            {sub.submitted_code ? (
+                              <button
+                                type="button"
+                                onClick={() => setSelectedCodeSubmission(sub)}
+                                className="text-brand-violet font-semibold hover:underline bg-transparent border-none cursor-pointer"
+                              >
+                                View Code (Editor)
+                              </button>
+                            ) : sub.github_url ? (
+                              <a
+                                 href={sub.github_url}
+                                 target="_blank"
+                                 rel="noreferrer"
+                                 className="text-brand-blue font-medium hover:underline inline-flex items-center gap-1"
+                              >
+                                View Link <ExternalLink size={10} />
+                              </a>
+                            ) : (
+                              <span className="text-text-muted">—</span>
+                            )}
                           </td>
                           <td className="px-5 py-4 text-text-muted truncate max-w-[150px]" title={sub.comments}>
                             {sub.comments || '—'}
@@ -4040,6 +4053,74 @@ export default function AdminDashboard() {
 
   </div>
 )}
+
+
+      {selectedCodeSubmission && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'rgba(0, 0, 0, 0.6)',
+            backdropFilter: 'blur(4px)',
+          }}
+          onClick={() => setSelectedCodeSubmission(null)}
+        >
+          <div
+            style={{
+              background: 'var(--bg-elevated)',
+              border: '1px solid var(--bg-border)',
+              borderRadius: '20px',
+              padding: '28px',
+              width: '90%',
+              maxWidth: '680px',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.3)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <div>
+                <span style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--brand-violet)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  Submitted Python Solution
+                </span>
+                <h3 style={{ fontSize: '16px', fontWeight: 'bold', color: 'var(--text-primary)', margin: '2px 0 0' }}>
+                  {selectedCodeSubmission.student_name} - {selectedCodeSubmission.challenge_title}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedCodeSubmission(null)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--text-muted)',
+                  cursor: 'pointer',
+                  fontSize: '18px',
+                }}
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 text-slate-100 font-mono text-xs leading-relaxed max-h-[350px] overflow-y-auto select-text">
+              <pre className="whitespace-pre">{selectedCodeSubmission.submitted_code}</pre>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
+              <button
+                type="button"
+                onClick={() => setSelectedCodeSubmission(null)}
+                className="px-4 py-2 text-xs font-bold text-white bg-brand-violet hover:opacity-90 rounded-lg transition-opacity"
+              >
+                Close Preview
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <ConfirmDialog
         open={confirmConfig !== null}
