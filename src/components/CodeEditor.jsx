@@ -119,10 +119,24 @@ export default function CodeEditor({ code, setCode, initialCode = "" }) {
       const wrapperCode = `
 import sys
 import io
+import js
+
+# Custom input using browser dialog prompt
+def custom_input(prompt_msg=""):
+    res = js.prompt(str(prompt_msg))
+    if res is None:
+        raise KeyboardInterrupt("Input dialog cancelled by user.")
+    return str(res)
+
 sys.stdout = io.StringIO()
 sys.stderr = io.StringIO()
+
 try:
     code_to_run = ${JSON.stringify(code)}
+    
+    import builtins
+    builtins.input = custom_input
+    
     exec(code_to_run, {})
     stdout_val = sys.stdout.getvalue()
     stderr_val = sys.stderr.getvalue()
