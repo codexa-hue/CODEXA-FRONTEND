@@ -133,17 +133,28 @@ export default function AdminDashboard() {
 
 
   useEffect(() => {
-    if (activeTab === 'requests' && !hasLoadedRequests) fetchRequests();
-    if (activeTab === 'events' && !hasLoadedEvents) fetchEvents();
-    if (activeTab === 'announcements' && !hasLoadedAnnouncements) fetchAnnouncements();
-    if (activeTab === 'members' && !hasLoadedMembers) fetchMembers();
-    if (activeTab === 'resources' && !hasLoadedResources) fetchResources();
+    // Load all data on mount so counts show correctly immediately
+    const loadAllData = async () => {
+      try {
+        await Promise.all([
+          fetchRequests(),
+          fetchMembers(),
+          fetchEvents(),
+          fetchAnnouncements(),
+          fetchResources(),
+          fetchChallenges(),
+          fetchAllSubmissions()
+        ]);
+      } catch (err) {
+        console.error("Failed to load initial admin dashboard data:", err);
+      }
+    };
+    loadAllData();
+  }, []);
+
+  useEffect(() => {
     if (activeTab === 'profile') fetchAdminProfile();
-    if (activeTab === 'challenges' && !hasLoadedChallenges) {
-      fetchChallenges();
-      fetchAllSubmissions();
-    }
-  }, [activeTab, hasLoadedRequests, hasLoadedEvents, hasLoadedAnnouncements, hasLoadedMembers, hasLoadedResources, hasLoadedChallenges]);
+  }, [activeTab]);
 
 
   const fetchAdminProfile = async () => {
