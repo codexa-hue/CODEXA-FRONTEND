@@ -107,6 +107,7 @@ export default function AdminDashboard() {
   const [chalPoints, setChalPoints] = useState(10);
   const [chalTargetYear, setChalTargetYear] = useState('all');
   const [selectedCodeSubmission, setSelectedCodeSubmission] = useState(null);
+  const [submissionYearFilter, setSubmissionYearFilter] = useState('all');
 
   const [challengesSubTab, setChallengesSubTab] = useState('prompts'); // prompts | submissions
   const [pwSaving, setPwSaving] = useState(false);
@@ -3813,33 +3814,63 @@ export default function AdminDashboard() {
             </div>
           )}
 
-          {challengesSubTab === 'submissions' && (
-            <div className="card overflow-hidden">
-              <div className="px-5 py-4 border-b border-bg-border">
-                <h3 className="font-bold text-xs uppercase text-text-primary">Solution Submissions</h3>
-                <p className="text-[10px] text-text-muted mt-0.5">Review solutions submitted by members.</p>
-              </div>
+          {challengesSubTab === 'submissions' && (() => {
+            const filteredSubmissions = submissions.filter((sub) => {
+              if (submissionYearFilter === 'all') return true;
+              return sub.student_year && sub.student_year.trim().toLowerCase() === submissionYearFilter.trim().toLowerCase();
+            });
 
-              {submissions.length === 0 ? (
-                <div className="py-12 text-center text-xs text-text-muted">No solutions submitted yet.</div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse">
-                    <thead>
-                      <tr className="bg-bg-elevated border-b border-bg-border text-[9px] font-bold uppercase tracking-wider text-text-muted">
-                        <th className="px-5 py-3.5">Student</th>
-                        <th className="px-5 py-3.5">Challenge</th>
-                        <th className="px-5 py-3.5">GitHub Link</th>
-                        <th className="px-5 py-3.5">Notes</th>
-                        <th className="px-5 py-3.5">Status</th>
-                        <th className="px-5 py-3.5">Feedback</th>
-                        <th className="px-5 py-3.5 text-right">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-bg-border text-xs">
-                      {submissions.map((sub) => (
-                        <tr key={sub.id} className="hover:bg-bg-elevated">
-                          <td className="px-5 py-4 font-semibold text-text-primary">{sub.student_name}</td>
+            return (
+              <div className="card overflow-hidden">
+                <div className="px-5 py-4 border-b border-bg-border flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                  <div>
+                    <h3 className="font-bold text-xs uppercase text-text-primary">Solution Submissions</h3>
+                    <p className="text-[10px] text-text-muted mt-0.5">Review solutions submitted by members.</p>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider">Filter Year:</span>
+                    <select
+                      value={submissionYearFilter}
+                      onChange={(e) => setSubmissionYearFilter(e.target.value)}
+                      className="bg-bg-elevated border border-bg-border text-text-primary text-[11px] rounded-lg px-2.5 py-1.5 focus:outline-none"
+                    >
+                      <option value="all">All Years</option>
+                      <option value="1st Year">1st Year</option>
+                      <option value="2nd Year">2nd Year</option>
+                      <option value="3rd Year">3rd Year</option>
+                      <option value="4th Year">4th Year</option>
+                    </select>
+                  </div>
+                </div>
+
+                {filteredSubmissions.length === 0 ? (
+                  <div className="py-12 text-center text-xs text-text-muted">
+                    {submissions.length === 0 ? "No solutions submitted yet." : "No submissions found matching this year filter."}
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                      <thead>
+                        <tr className="bg-bg-elevated border-b border-bg-border text-[9px] font-bold uppercase tracking-wider text-text-muted">
+                          <th className="px-5 py-3.5">Student</th>
+                          <th className="px-5 py-3.5">Challenge</th>
+                          <th className="px-5 py-3.5">GitHub Link</th>
+                          <th className="px-5 py-3.5">Notes</th>
+                          <th className="px-5 py-3.5">Status</th>
+                          <th className="px-5 py-3.5">Feedback</th>
+                          <th className="px-5 py-3.5 text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-bg-border text-xs">
+                        {filteredSubmissions.map((sub) => (
+                          <tr key={sub.id} className="hover:bg-bg-elevated">
+                            <td className="px-5 py-4">
+                              <div className="font-semibold text-text-primary">{sub.student_name}</div>
+                              {sub.student_year && (
+                                <div className="text-[10px] text-text-muted mt-0.5 font-normal">{sub.student_year}</div>
+                              )}
+                            </td>
                           <td className="px-5 py-4 text-text-secondary">{sub.challenge_title}</td>
                           <td className="px-5 py-4">
                             {sub.submitted_code ? (
@@ -3907,7 +3938,8 @@ export default function AdminDashboard() {
                 </div>
               )}
             </div>
-          )}
+          )
+        })()}
         </div>
       )}
 
