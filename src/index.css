@@ -309,3 +309,9 @@ html { font-size: 16px; scroll-behavior: smooth; }
     0 35px 100px rgba(70, 45, 100, 0.16),
     inset 0 1px 0 rgba(255, 255, 255, 0.7);
 }
+
+/* Hide Microsoft Edge native password reveal and clear buttons */
+input::-ms-reveal,
+input::-ms-clear {
+  display: none;
+}

@@ -146,6 +146,8 @@ import {
   AlertCircle,
   ShieldCheck,
   ArrowLeft,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 
 export default function AdminLogin() {
@@ -161,6 +163,7 @@ export default function AdminLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] =
     useState(false);
 
@@ -426,7 +429,7 @@ export default function AdminLogin() {
                   />
 
                   <input
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     required
                     minLength={6}
                     value={password}
@@ -437,10 +440,36 @@ export default function AdminLogin() {
                     className="
                       input-field
                       pl-10
+                      pr-10
                     "
                     autoComplete="current-password"
                     disabled={submitting}
                   />
+
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="
+                      absolute
+                      right-3.5
+                      top-1/2
+                      -translate-y-1/2
+                      text-text-muted
+                      hover:text-text-primary
+                      focus:outline-none
+                    "
+                    style={{
+                      background: "none",
+                      border: "none",
+                      padding: 0,
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center"
+                    }}
+                    disabled={submitting}
+                  >
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
 
                 </div>
 

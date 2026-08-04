@@ -16,6 +16,8 @@ import {
   Send,
   User,
   UserCircle2,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 
 import { useAuth } from "../context/AuthContext";
@@ -39,6 +41,8 @@ function RegisterForm({ onSwitch }) {
   const [reason, setReason] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPw, setConfirmPw] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -229,7 +233,7 @@ function RegisterForm({ onSwitch }) {
             icon={<KeyRound size={17} />}
           >
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               required
               minLength={6}
               value={password}
@@ -238,6 +242,22 @@ function RegisterForm({ onSwitch }) {
               }
               placeholder="Minimum 6 characters"
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              style={{
+                background: "none",
+                border: "none",
+                padding: "0 4px",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                color: "#9298ad",
+                flexShrink: 0
+              }}
+            >
+              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+            </button>
           </Field>
           <PasswordStrength password={password} />
         </div>
@@ -247,7 +267,7 @@ function RegisterForm({ onSwitch }) {
           icon={<KeyRound size={17} />}
         >
           <input
-            type="password"
+            type={showConfirmPassword ? "text" : "password"}
             required
             value={confirmPw}
             onChange={(e) =>
@@ -255,6 +275,22 @@ function RegisterForm({ onSwitch }) {
             }
             placeholder="Repeat password"
           />
+          <button
+            type="button"
+            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            style={{
+              background: "none",
+              border: "none",
+              padding: "0 4px",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              color: "#9298ad",
+              flexShrink: 0
+            }}
+          >
+            {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+          </button>
         </Field>
       </div>
 
@@ -295,11 +331,10 @@ function SignInForm() {
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
-  const [password, setPassword] =
-    useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [loading, setLoading] =
-    useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (isAuthenticated && !isAdmin) {
@@ -372,7 +407,7 @@ function SignInForm() {
           <KeyRound size={17} />
 
           <input
-            type="password"
+            type={showPassword ? "text" : "password"}
             required
             value={password}
             onChange={(e) =>
@@ -381,6 +416,22 @@ function SignInForm() {
             placeholder="Enter your password"
             autoComplete="current-password"
           />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            style={{
+              background: "none",
+              border: "none",
+              padding: "0 4px",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              color: "#9298ad",
+              flexShrink: 0
+            }}
+          >
+            {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+          </button>
         </div>
 
         <div style={{ textAlign: 'right', marginTop: '6px' }}>
